@@ -9,8 +9,21 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 from collections import Counter
 
+import logging
+
 app = Flask(__name__)
 CORS(app)
+
+# Silence the /ping endpoint access logs so it doesn't clutter the terminal
+class NoPingFilter(logging.Filter):
+    def filter(self, record):
+        return 'GET /ping' not in record.getMessage()
+
+logging.getLogger("werkzeug").addFilter(NoPingFilter())
+
+@app.route('/ping', methods=['GET'])
+def ping():
+    return jsonify({"status": "ok"})
 
 # Initialize TWO ddddocr instances for different recognition modes
 ocr_std = ddddocr.DdddOcr(show_ad=False)
